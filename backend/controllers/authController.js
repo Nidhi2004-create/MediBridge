@@ -7,11 +7,9 @@ exports.doctorLogin = async (req, res) => {
     console.log("Login attempt for:", username);
 
     try {
-        // 1. Find the doctor by their email (username)
-        const doctor = await Doctor.findOne({ email: username });
+        const doctor = await Doctor.findOne({ username });
 
         if (!doctor) {
-            // Doctor not found
             return res.json({ success: false, message: "Invalid credentials (Doctor not found)" });
         }
 
@@ -24,9 +22,14 @@ exports.doctorLogin = async (req, res) => {
             return res.json({ success: false, message: "Invalid credentials (Wrong password)" });
         }
 
-        // 3. Successful Login: Here you would typically generate and send a JWT token.
-        // For now, we will just send success: true to allow dashboard redirection.
-        return res.json({ success: true, message: "Login successful!" });
+        // 3. Successful Login: For now, send doctor info for dashboard use.
+        return res.json({
+            success: true,
+            message: "Login successful!",
+            doctorId: doctor._id,
+            doctorName: doctor.name,
+            doctorSpecialty: doctor.specialty || "General Physician"
+        });
 
     } catch (err) {
         console.error("Login error during database check:", err);

@@ -9,6 +9,8 @@ dotenv.config();
 // Connect to Database
 connectDB(); 
 
+const bcrypt = require("bcryptjs");
+
 const doctors = [
   { name: "Dr. Asha Verma", specialty: "Cardiologist", phone: "+91-9876543210", username: "asha.verma@example.com", address: "Patna, Bihar", password: "pass123" },
   { name: "Dr. Rohan Mehta", specialty: "Dermatologist", phone: "+91-9123456780", username: "rohan.mehta@example.com", address: "Mumbai, Maharashtra", password: "pass123" },
@@ -44,13 +46,16 @@ const doctors = [
 
 const seedDB = async () => {
   try {
-    // Delete existing doctors to avoid duplicates
     await Doctor.deleteMany({});
     console.log("Old doctor data cleared.");
 
-    // Insert new list
+    for (const doc of doctors) {
+      doc.email = doc.username;
+      doc.password = await bcrypt.hash(doc.password, 10);
+    }
+
     await Doctor.insertMany(doctors);
-    console.log("Success! 30 Doctors added to the database.");
+    console.log("Success! Doctors added to the database.");
     
     process.exit();
   } catch (error) {

@@ -39,4 +39,17 @@ const getDoctorAppointments = async (req, res) => {
   }
 };
 
-module.exports = { bookAppointment, getDoctorAppointments };
+const getAllAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find()
+      .populate("doctorId", "name specialty")
+      .populate("patientId", "name");
+
+    res.json(appointments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+module.exports = { bookAppointment, getDoctorAppointments, getAllAppointments };

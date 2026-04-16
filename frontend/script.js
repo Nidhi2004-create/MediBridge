@@ -33,7 +33,7 @@ let medicines = [
 // ==========================
 async function loadProfile() {
   try {
-    const res = await fetch("http://localhost:5000/profile");
+    const res = await fetch("http://localhost:5001/profile");
     const data = await res.json();
     const html = `
       <div class="w-full flex justify-center">
@@ -97,7 +97,7 @@ function loadDoctor() {
 // ==========================
 async function loadMedicines() {
   try {
-    const res = await fetch("http://localhost:5000/medicines");
+    const res = await fetch("http://localhost:5001/medicines");
     const data = await res.json();
     let items = data.map(m => `
       <div class="p-4 bg-[#E3F2FD] rounded-xl border border-[#90CAF9] shadow mb-3">
@@ -123,7 +123,7 @@ async function loadMedicines() {
 // ==========================
 async function loadAppointments() {
   try {
-    const res = await fetch("http://localhost:5000/appointments");
+    const res = await fetch("http://localhost:5001/appointments");
     const data = await res.json();
     const items = data.map(a => `
       <div class="p-4 bg-[#E3F2FD] rounded-xl border border-[#90CAF9] shadow mb-3">
@@ -149,7 +149,7 @@ async function loadAppointments() {
 // ==========================
 async function loadNotifications() {
   try {
-    const res = await fetch("http://localhost:5000/notifications");
+    const res = await fetch("http://localhost:5001/notifications");
     const data = await res.json();
     const items = data.map(n => `
       <div class="p-4 bg-yellow-100 rounded-xl border border-yellow-300 shadow mb-3">
@@ -174,7 +174,7 @@ async function loadNotifications() {
 // ==========================
 async function loadPrescriptions() {
   try {
-    const res = await fetch("http://localhost:5000/prescriptions");
+    const res = await fetch("http://localhost:5001/prescriptions");
     const data = await res.json();
     const items = data.length
       ? data.map(url => `
@@ -212,7 +212,7 @@ async function uploadPrescription() {
   formData.append('file', file);
 
   try {
-    const res = await fetch("http://localhost:5000/upload-prescription", {
+    const res = await fetch("http://localhost:5001/upload-prescription", {
       method: "POST",
       body: formData
     });

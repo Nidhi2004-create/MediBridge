@@ -2,17 +2,32 @@ const mongoose = require('mongoose');
 
 // Define your Doctor Schema
 const DoctorSchema = new mongoose.Schema({
-    // IMPORTANT: Include ALL of your original Doctor schema fields here!
-    email: {
+    name: {
+        type: String,
+        required: true
+    },
+    username: {
         type: String,
         required: true,
         unique: true
+    },
+    email: {
+        type: String,
+        trim: true
     },
     password: {
         type: String,
         required: true
     },
-    // ... add any other fields you had in your original schema
+    specialty: {
+        type: String
+    },
+    phone: {
+        type: String
+    },
+    address: {
+        type: String
+    }
 }, { timestamps: true });
 
 // FIX for 'OverwriteModelError': 

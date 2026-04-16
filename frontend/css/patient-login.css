@@ -237,3 +237,25 @@ body {
 .form-input:not(:placeholder-shown):invalid ~ .input-icon {
   color: #ef4444;
 }
+
+.tab-button {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-button.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #2563eb;
+}
+
+.tab-button:hover {
+  background: #e2e8f0;
+}

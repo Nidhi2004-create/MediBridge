@@ -1,4 +1,5 @@
 const Patient = require("../models/Patient");
+const bcrypt = require("bcryptjs");
 
 // --- SIGN UP ---
 exports.signupPatient = async (req, res) => {
@@ -12,15 +13,17 @@ exports.signupPatient = async (req, res) => {
         }
 
         // Create new patient
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         const newPatient = new Patient({
             username,
-            password, // In a real app, you should hash this password!
+            password: hashedPassword,
             name,
             age,
             gender,
             phone,
-            medicalHistory: [], // Empty default
-            prescriptions: []   // Empty default
+            medicalHistory: [],
+            prescriptions: []
         });
 
         await newPatient.save();
@@ -38,8 +41,12 @@ exports.loginPatient = async (req, res) => {
         const { username, password } = req.body;
 
         const patient = await Patient.findOne({ username });
-        
-        if (!patient || patient.password !== password) {
+        if (!patient) {
+            return res.status(400).json({ success: false, message: "Invalid credentials" });
+        }
+
+        const isMatch = await bcrypt.compare(password, patient.password);
+        if (!isMatch) {
             return res.status(400).json({ success: false, message: "Invalid credentials" });
         }
 

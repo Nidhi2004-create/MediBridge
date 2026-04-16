@@ -1,29 +1,9 @@
-document.addEventListener("DOMContentLoaded", () => {
-    // --- BYPASS AUTH CHECK ---
-    // We assume the user is logged in for the demo
-    console.log("Demo Mode: Loaded Static Dashboard");
+﻿const BASE_URL = "http://localhost:5001";
+const doctorId = localStorage.getItem('doctorId');
+const doctorName = localStorage.getItem('doctorName') || 'Dr. Sharma';
+const doctorSpecialty = localStorage.getItem('doctorSpecialty') || 'General Physician';
 
-    setupNavigation();
-    loadAppointments();
-    loadPatients();
-    loadOnlinePatients();
-});
-
-// --- 1. DUMMY DATA (Hardcoded for Demo) ---
-
-let appointmentsData = {
-    today: [
-        { id: 1, name: "Rahul Verma", issue: "Fever & Cold", time: "10:00 AM" },
-        { id: 2, name: "Anita Roy", issue: "Dental Checkup", time: "11:30 AM" }
-    ],
-    upcoming: [
-        { id: 3, name: "Suresh Singh", issue: "Back Pain", time: "Tomorrow, 9:00 AM" }
-    ],
-    requested: [
-        { id: 101, name: "Vikram Das", issue: "General Consultation", time: "Pending" },
-        { id: 105, name: "Riya Kapoor", issue: "Skin Rash", time: "Pending" } 
-    ]
-};
+let appointmentsData = { today: [], upcoming: [], requested: [] };
 
 const patientDatabase = [
     { id: 1, name: "Rahul Verma", age: 34, gender: "Male", history: ["Hypertension"], prescriptions: ["prescription-1.jpg"] },
@@ -37,10 +17,74 @@ const onlinePatientsData = [
     { name: "Rohan Das", issue: "Report Review", time: "Just Joined", status: "Online" }
 ];
 
+document.addEventListener("DOMContentLoaded", async () => {
+    if (!doctorId) {
+        window.location.href = 'doctor-login.html';
+        return;
+    }
 
-// --- 2. RENDERING LOGIC (Visuals Only) ---
+    const profileName = document.querySelector('.profile-section h2');
+    const profileRole = document.querySelector('.profile-section .role');
+    if (profileName) profileName.textContent = doctorName;
+    if (profileRole) profileRole.textContent = doctorSpecialty;
+    const dateDisplay = document.querySelector('.date-display');
+    if (dateDisplay) {
+        dateDisplay.textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'short', day: 'numeric'
+        });
+    }
 
-function loadAppointments() {
+    setupNavigation();
+    await loadAppointments();
+    loadPatients();
+    loadOnlinePatients();
+});
+
+async function loadAppointments() {
+    try {
+        const res = await fetch(`${BASE_URL}/api/appointments/doctor/${doctorId}`);
+        if (!res.ok) throw new Error('Fetch error');
+        const appointments = await res.json();
+        const todayKey = new Date().toISOString().slice(0, 10);
+        appointmentsData = { today: [], upcoming: [], requested: [] };
+
+        appointments.forEach((appt, index) => {
+            const item = {
+                id: index + 1,
+                name: appt.patientId?.name || 'Patient',
+                issue: appt.reason || 'General Checkup',
+                time: appt.date || 'TBD',
+                status: appt.status || 'Pending'
+            };
+            if (item.status === 'Pending') {
+                appointmentsData.requested.push(item);
+            } else if (item.status === 'Approved') {
+                if (appt.date === todayKey) {
+                    appointmentsData.today.push(item);
+                } else {
+                    appointmentsData.upcoming.push(item);
+                }
+            } else {
+                appointmentsData.upcoming.push(item);
+            }
+        });
+    } catch (err) {
+        console.warn('Unable to load doctor appointments, using demo data.', err);
+        appointmentsData = {
+            today: [
+                { id: 1, name: "Rahul Verma", issue: "Fever & Cold", time: "10:00 AM" },
+                { id: 2, name: "Anita Roy", issue: "Dental Checkup", time: "11:30 AM" }
+            ],
+            upcoming: [
+                { id: 3, name: "Suresh Singh", issue: "Back Pain", time: "Tomorrow, 9:00 AM" }
+            ],
+            requested: [
+                { id: 101, name: "Vikram Das", issue: "General Consultation", time: "Pending" },
+                { id: 105, name: "Riya Kapoor", issue: "Skin Rash", time: "Pending" }
+            ]
+        };
+    }
+
     renderList("today-list", appointmentsData.today, "today");
     renderList("upcoming-list", appointmentsData.upcoming, "upcoming");
     renderRequestedList("requested-list", appointmentsData.requested);
@@ -93,16 +137,14 @@ function renderRequestedList(elementId, data) {
     });
 }
 
-// --- 3. INTERACTION LOGIC (Visual Updates Only) ---
-
 function acceptAppt(id) {
     const index = appointmentsData.requested.findIndex(a => a.id === id);
     if (index !== -1) {
         const item = appointmentsData.requested.splice(index, 1)[0];
         item.time = "Confirmed";
         appointmentsData.upcoming.push(item);
-        loadAppointments(); // Refresh Screen
-        alert("Appointment Accepted (Demo Mode)");
+        loadAppointments();
+        alert("Appointment accepted.");
     }
 }
 
@@ -110,7 +152,7 @@ function rejectAppt(id) {
     const index = appointmentsData.requested.findIndex(a => a.id === id);
     if (index !== -1) {
         appointmentsData.requested.splice(index, 1);
-        loadAppointments(); // Refresh Screen
+        loadAppointments();
     }
 }
 
@@ -122,7 +164,7 @@ function loadPatients() {
         const card = document.createElement("div");
         card.className = "patient-card-simple";
         card.onclick = () => openModal(patient);
-        
+
         const initials = patient.name.split(" ").map(n => n[0]).join("");
         const condition = patient.history.length > 0 ? patient.history[0] : "Healthy";
 
@@ -138,8 +180,7 @@ function loadPatients() {
 
 function filterPatients() {
     const query = document.getElementById("patient-search").value.toLowerCase();
-    const cards = document.querySelectorAll(".patient-card-simple");
-    cards.forEach(card => {
+    document.querySelectorAll(".patient-card-simple").forEach(card => {
         const name = card.querySelector(".p-name").innerText.toLowerCase();
         card.style.display = name.includes(query) ? "block" : "none";
     });
@@ -151,7 +192,7 @@ function loadOnlinePatients() {
     list.innerHTML = "";
     onlinePatientsData.forEach(p => {
         const card = document.createElement("div");
-        card.className = "appt-card online-card"; 
+        card.className = "appt-card online-card";
         card.innerHTML = `
             <div class="appt-left">
                 <div>${p.name}</div>
@@ -166,8 +207,6 @@ function loadOnlinePatients() {
         list.appendChild(card);
     });
 }
-
-// --- 4. MODAL & NAVIGATION ---
 
 function setupNavigation() {
     const links = {
@@ -204,13 +243,18 @@ function setupNavigation() {
     links.settings.onclick = () => switchView('settings');
 
     links.logout.onclick = () => {
-        if(confirm("Logout?")) window.location.href = "doctor-login.html";
+        if (confirm("Logout?")) {
+            localStorage.removeItem('doctorId');
+            localStorage.removeItem('doctorName');
+            localStorage.removeItem('doctorSpecialty');
+            window.location.href = "doctor-login.html";
+        }
     };
 }
 
 function openModalByName(name) {
     const patient = patientDatabase.find(p => p.name === name);
-    if(patient) openModal(patient);
+    if (patient) openModal(patient);
 }
 
 function openModal(patient) {
@@ -224,7 +268,6 @@ function openModal(patient) {
 
     const rxList = document.getElementById("modal-prescriptions");
     rxList.innerHTML = patient.prescriptions.length ? patient.prescriptions.map(p => `<li>📄 ${p}</li>`).join("") : "<li>No prescriptions</li>";
-
     modal.style.display = "block";
 }
 
@@ -238,9 +281,10 @@ window.onclick = function(e) {
 
 function sendDoctorMessage() {
     const input = document.getElementById("msg-input");
-    if(input.value.trim() !== "") {
+    if (input.value.trim() !== "") {
         const chatBox = document.getElementById("chat-box");
         chatBox.innerHTML += `<div class="message msg-sent"><strong>Me:</strong> ${input.value}</div>`;
         input.value = "";
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
 }

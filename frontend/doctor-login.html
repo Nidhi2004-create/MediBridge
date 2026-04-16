@@ -25,9 +25,9 @@
 
         <input type="text" id="username" placeholder="Username" required>
 
-        <div class="password-wrapper">
-          <input type="password" id="password" placeholder="Password" required>
-          <span class="toggle-pass" id="togglePass">Show</span>
+        <div class="password-wrapper" style="position:relative; width:90%; margin:0 auto 15px;">
+          <input type="password" id="password" placeholder="Password" required style="width:100%; padding-right:74px;" />
+          <span class="toggle-pass" id="togglePass" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; color:#2563eb; font-weight:600;">Show</span>
         </div>
 
         <button type="submit" class="login-btn">Login</button>
@@ -42,37 +42,6 @@
 
 </div>
 
-<script>
-    // EMERGENCY BYPASS SCRIPT
-    // This ignores the server and just lets you in.
-    
-    // Toggle Password Visibility
-    window.togglePasswordVisibility = function() {
-        const passwordField = document.getElementById('password'); 
-        const showButton = document.querySelector('.show-button');
-        if (passwordField && showButton) {
-            if (passwordField.type === "password") {
-                passwordField.type = "text";
-                showButton.textContent = "Hide";
-            } else {
-                passwordField.type = "password";
-                showButton.textContent = "Show";
-            }
-        }
-    }
-
-    // FAKE LOGIN LOGIC
-    document.querySelector("form").addEventListener("submit", function(e) {
-        e.preventDefault(); 
-        
-        // Pretend we logged in successfully
-        localStorage.setItem("doctorId", "demo-id");
-        localStorage.setItem("doctorName", "Dr. Sharma");
-        
-        // Just go to the dashboard
-        window.location.href = "doctor-dashboard.html";
-    });
-</script>
-
+<script src="js/doctor-login.js"></script>
 </body>
 </html>
